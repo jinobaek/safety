@@ -1,0 +1,445 @@
+```html
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Casio 스타일 화이트 공학용 계산기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: radial-gradient(circle at 50% 50%, #f1f5f9 0%, #cbd5e1 100%);
+      touch-action: manipulation;
+    }
+    /* 고대비 LCD 액정 감성 */
+    .lcd-screen {
+      font-family: 'Share Tech Mono', 'Orbitron', monospace;
+      background-color: #d1dcd0; /* 클래식 흑백 LCD의 무광 그레이-그린 연출 */
+      box-shadow: inset 0px 3px 8px rgba(0, 0, 0, 0.25);
+      color: #1f2d24;
+      text-shadow: 0.5px 0.5px 0px rgba(255, 255, 255, 0.4);
+    }
+    /* 입체감이 살아있는 화이트/실버 버튼 스타일 */
+    .casio-btn-white {
+      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+      border-top: 1px solid #ffffff;
+      border-bottom: 3px solid #cbd5e1;
+      color: #1e293b;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    .casio-btn-white:active {
+      background: #e2e8f0;
+      border-bottom-width: 1px;
+      transform: translateY(2px);
+    }
+    .casio-btn-dark-grey {
+      background: linear-gradient(180deg, #64748b 0%, #475569 100%);
+      border-top: 1px solid #94a3b8;
+      border-bottom: 3px solid #1e293b;
+      color: #ffffff;
+    }
+    .casio-btn-dark-grey:active {
+      background: #334155;
+      border-bottom-width: 1px;
+      transform: translateY(2px);
+    }
+    .casio-btn-orange {
+      background: linear-gradient(180deg, #ff8c00 0%, #e06c00 100%);
+      border-top: 1px solid #ffedd5;
+      border-bottom: 3px solid #9a3412;
+      color: #ffffff;
+    }
+    .casio-btn-orange:active {
+      background: #ea580c;
+      border-bottom-width: 1px;
+      transform: translateY(2px);
+    }
+    /* 노란색 쉬프트 라벨 */
+    .shift-label { color: #d97706; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+
+  <!-- 계산기 본체 외각 프레임 (모바일 높이에 맞춘 슬림형 화이트 섀시) -->
+  <div class="w-full max-w-[360px] sm:max-w-md bg-[#f8fafc] rounded-[2rem] border-4 border-[#e2e8f0] shadow-[0_20px_40px_-10px_rgba(100,116,139,0.3)] p-4 sm:p-6 flex flex-col justify-between">
+    
+    <!-- 카시오 브랜드 로고 및 섀시 라벨 -->
+    <div class="flex justify-between items-center px-1 mb-2">
+      <div>
+        <span class="text-slate-800 font-extrabold text-base sm:text-lg tracking-wider font-sans">CASIO</span>
+        <span class="text-slate-500 text-[8px] sm:text-[9px] font-bold ml-1 sm:ml-2">fx-570W CLASSWIZ</span>
+      </div>
+      <div class="text-[7px] sm:text-[8px] text-slate-600 font-bold uppercase tracking-widest bg-slate-200 px-1.5 py-0.5 rounded border border-slate-300">
+        NATURAL-V.P.A.M.
+      </div>
+    </div>
+
+    <!-- 태양광 패널 모사 데코레이션 -->
+    <div class="w-full h-4 sm:h-5 bg-[#2d1b10] rounded border border-[#e2e8f0] mb-2.5 flex justify-around items-center overflow-hidden">
+      <span class="text-[6px] sm:text-[7px] text-[#a78bfa] tracking-widest font-sans font-bold opacity-80">TWO WAY POWER</span>
+      <div class="w-1/3 h-full bg-[#4e2f1b] border-l border-r border-black/30"></div>
+    </div>
+
+    <!-- 고대비 LCD 액정 영역 (모바일 대응 높이 최적화) -->
+    <div class="lcd-screen rounded-lg p-2.5 sm:p-3.5 mb-3 flex flex-col justify-between h-20 sm:h-24 relative">
+      <!-- 상단 인디케이터 표시줄 -->
+      <div class="flex justify-between items-center text-[8px] sm:text-[10px] font-bold opacity-80 border-b border-[#b8c5b6] pb-0.5 mb-1">
+        <div class="flex space-x-2">
+          <span id="shiftIndicator" class="hidden">S</span>
+          <span id="alphaIndicator" class="hidden">A</span>
+          <span id="memoryIndicator" class="hidden">M</span>
+        </div>
+        <div class="flex space-x-2">
+          <span id="degIndicator" class="text-slate-900 font-extrabold">D</span>
+          <span id="radIndicator" class="opacity-30">R</span>
+          <span class="opacity-30">G</span>
+        </div>
+      </div>
+
+      <!-- 입력 수식 디스플레이 -->
+      <div id="formulaDisplay" class="text-left text-sm sm:text-base font-medium tracking-wide truncate h-6 overflow-hidden flex items-center pr-1"></div>
+      
+      <!-- 계산 결과 디스플레이 -->
+      <div id="resultDisplay" class="text-right text-xl sm:text-2xl font-semibold tracking-wide h-8 flex justify-end items-end">0</div>
+    </div>
+
+    <!-- 기능 키 1세트 라벨 -->
+    <div class="grid grid-cols-5 gap-x-1 text-[7px] sm:text-[8px] font-bold text-center px-0.5 mb-0.5">
+      <div><span class="shift-label">sin⁻¹</span></div>
+      <div><span class="shift-label">cos⁻¹</span></div>
+      <div><span class="shift-label">tan⁻¹</span></div>
+      <div><span class="shift-label">x³</span></div>
+      <div><span class="shift-label">CLR</span></div>
+    </div>
+
+    <!-- 기능 키 1세트 -->
+    <div class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-2">
+      <button onclick="appendFunction('sin')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">sin</button>
+      <button onclick="appendFunction('cos')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">cos</button>
+      <button onclick="appendFunction('tan')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">tan</button>
+      <button onclick="appendOperator('**')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">xʸ</button>
+      <button onclick="clearAll()" class="casio-btn-dark-grey text-rose-200 py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">AC</button>
+    </div>
+
+    <!-- 기능 키 2세트 라벨 -->
+    <div class="grid grid-cols-5 gap-x-1 text-[7px] sm:text-[8px] font-bold text-center px-0.5 mb-0.5">
+      <div><span class="shift-label">³√</span></div>
+      <div><span class="shift-label">eˣ</span></div>
+      <div><span class="shift-label">10ˣ</span></div>
+      <div><span class="shift-label">π</span></div>
+      <div><span class="shift-label">e</span></div>
+    </div>
+
+    <!-- 기능 키 2세트 -->
+    <div class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-2">
+      <button onclick="appendFunction('sqrt')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">√</button>
+      <button onclick="appendFunction('ln')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">ln</button>
+      <button onclick="appendFunction('log10')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">log</button>
+      <button onclick="appendConstant('Math.PI')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">π</button>
+      <button onclick="toggleAngleUnit()" class="casio-btn-dark-grey text-emerald-300 py-1.5 sm:py-2 rounded-md text-[8px] sm:text-[9px] font-bold transition-all">D/R</button>
+    </div>
+
+    <!-- 기능 키 3세트 라벨 -->
+    <div class="grid grid-cols-5 gap-x-1 text-[7px] sm:text-[8px] font-bold text-center px-0.5 mb-0.5">
+      <div><span class="shift-label">M-</span></div>
+      <div><span class="shift-label">x!</span></div>
+      <div><span class="shift-label">%</span></div>
+      <div><span class="shift-label">,,</span></div>
+      <div><span class="shift-label">M</span></div>
+    </div>
+
+    <!-- 기능 키 3세트 -->
+    <div class="grid grid-cols-5 gap-1.5 sm:gap-2 mb-4">
+      <button onclick="handleMemory('M+')" class="casio-btn-dark-grey text-amber-300 py-1.5 sm:py-2 rounded-md text-[9px] sm:text-[10px] font-bold transition-all">M+</button>
+      <button onclick="appendFunction('fact')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">x!</button>
+      <button onclick="appendBracket('(')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">(</button>
+      <button onclick="appendBracket(')')" class="casio-btn-dark-grey py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">)</button>
+      <button onclick="backspace()" class="casio-btn-orange py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all">DEL</button>
+    </div>
+
+    <!-- 메인 숫자 키패드 및 기본 사칙 연산 영역 (높이 및 여백 축소) -->
+    <div class="grid grid-cols-4 gap-2 sm:gap-3">
+      <!-- 7 8 9 ÷ -->
+      <button onclick="appendNumber('7')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">7</button>
+      <button onclick="appendNumber('8')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">8</button>
+      <button onclick="appendNumber('9')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">9</button>
+      <button onclick="appendOperator('/')" class="casio-btn-dark-grey py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">÷</button>
+
+      <!-- 4 5 6 × -->
+      <button onclick="appendNumber('4')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">4</button>
+      <button onclick="appendNumber('5')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">5</button>
+      <button onclick="appendNumber('6')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">6</button>
+      <button onclick="appendOperator('*')" class="casio-btn-dark-grey py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">×</button>
+
+      <!-- 1 2 3 - -->
+      <button onclick="appendNumber('1')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">1</button>
+      <button onclick="appendNumber('2')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">2</button>
+      <button onclick="appendNumber('3')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">3</button>
+      <button onclick="appendOperator('-')" class="casio-btn-dark-grey py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">−</button>
+
+      <!-- 0 . EXP = -->
+      <button onclick="appendNumber('0')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">0</button>
+      <button onclick="appendDecimal()" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-bold transition-all">.</button>
+      <button onclick="appendFunction('exp')" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-xs sm:text-sm font-bold transition-all">EXP</button>
+      <button onclick="calculate()" class="casio-btn-white py-2.5 sm:py-3.5 rounded-lg text-lg sm:text-xl font-extrabold bg-gradient-to-b from-blue-50 to-blue-100 border-b-blue-400 border-b-3 text-blue-600 transition-all">=</button>
+    </div>
+
+    <!-- 하단 브랜드 로고 리본 -->
+    <div class="text-center mt-3 sm:mt-4">
+      <span class="text-slate-400 text-[8px] sm:text-[9px] font-semibold uppercase tracking-wider">INTEGRATED MATHEMATICAL ELECTRONICS</span>
+    </div>
+
+  </div>
+
+  <script>
+    // 카시오 상태 저장소
+    let currentInput = "";      // 현재 입력 수식 문자열
+    let resultValue = "0";      // 계산 결과
+    let isDegree = true;        // 각도 모드 (기본 DEG)
+    let memoryValue = 0;        // 메모리 값
+    let shouldReset = false;    // 계산 직후 초기화용 플래그
+
+    // DOM 선택자
+    const formulaDisplay = document.getElementById("formulaDisplay");
+    const resultDisplay = document.getElementById("resultDisplay");
+    const degIndicator = document.getElementById("degIndicator");
+    const radIndicator = document.getElementById("radIndicator");
+    const memoryIndicator = document.getElementById("memoryIndicator");
+
+    updateLCD();
+
+    // LCD 전체 업데이트 함수
+    function updateLCD() {
+      if (currentInput === "") {
+        formulaDisplay.innerHTML = '<span class="opacity-30 text-xs">Enter math formula</span>';
+      } else {
+        formulaDisplay.textContent = currentInput;
+      }
+
+      if (resultValue === "Error") {
+        resultDisplay.textContent = "Math ERROR";
+      } else {
+        resultDisplay.textContent = resultValue;
+      }
+    }
+
+    // 각도 변경 (DEG <-> RAD)
+    function toggleAngleUnit() {
+      isDegree = !isDegree;
+      if (isDegree) {
+        degIndicator.className = "text-slate-900 font-extrabold";
+        radIndicator.className = "opacity-30";
+      } else {
+        radIndicator.className = "text-slate-900 font-extrabold";
+        degIndicator.className = "opacity-30";
+      }
+    }
+
+    // 숫자 버튼 클릭
+    function appendNumber(num) {
+      if (shouldReset) {
+        currentInput = "";
+        shouldReset = false;
+      }
+      currentInput += num;
+      updateLCD();
+    }
+
+    // 소수점 처리
+    function appendDecimal() {
+      if (shouldReset) {
+        currentInput = "0";
+        shouldReset = false;
+      }
+      const tokens = currentInput.split(/[\+\-\*\/]/);
+      const lastToken = tokens[tokens.length - 1];
+      if (!lastToken.includes('.')) {
+        currentInput += ".";
+      }
+      updateLCD();
+    }
+
+    // 연산자 처리
+    function appendOperator(op) {
+      if (shouldReset) {
+        currentInput = resultValue;
+        shouldReset = false;
+      }
+      if (currentInput === "") {
+        if (op === '-') {
+          currentInput += op;
+        }
+        return;
+      }
+      const lastChar = currentInput.slice(-1);
+      const isOperator = ['+', '-', '*', '/'].includes(lastChar);
+      if (isOperator) {
+        currentInput = currentInput.slice(0, -1) + op;
+      } else {
+        currentInput += op;
+      }
+      updateLCD();
+    }
+
+    // 괄호 처리
+    function appendBracket(bracket) {
+      if (shouldReset) {
+        currentInput = "";
+        shouldReset = false;
+      }
+      currentInput += bracket;
+      updateLCD();
+    }
+
+    // 상수 처리
+    function appendConstant(constName) {
+      if (shouldReset) {
+        currentInput = "";
+        shouldReset = false;
+      }
+      const label = constName === 'Math.PI' ? 'π' : 'e';
+      currentInput += label;
+      updateLCD();
+    }
+
+    // 특수 수학 함수 추가
+    function appendFunction(funcName) {
+      if (shouldReset) {
+        currentInput = "";
+        shouldReset = false;
+      }
+      const lastChar = currentInput.slice(-1);
+      if (lastChar !== "" && !isNaN(lastChar)) {
+        currentInput += "*";
+      }
+      if (funcName === 'fact') {
+        currentInput += "!";
+      } else {
+        currentInput += funcName + "(";
+      }
+      updateLCD();
+    }
+
+    // 메모리 저장 및 로드
+    function handleMemory(action) {
+      const currentVal = parseFloat(resultValue) || 0;
+      if (action === 'M+') {
+        memoryValue += currentVal;
+        memoryIndicator.classList.remove("hidden");
+      } else {
+        memoryValue = 0;
+        memoryIndicator.classList.add("hidden");
+      }
+      shouldReset = true;
+    }
+
+    // 문자 삭제 (DEL)
+    function backspace() {
+      if (shouldReset) {
+        clearAll();
+        return;
+      }
+      if (currentInput.length > 0) {
+        currentInput = currentInput.slice(0, -1);
+      }
+      updateLCD();
+    }
+
+    // 완전 초기화 (AC)
+    function clearAll() {
+      currentInput = "";
+      resultValue = "0";
+      shouldReset = false;
+      updateLCD();
+    }
+
+    // 팩토리얼 함수
+    function fact(n) {
+      if (n < 0 || !Number.isInteger(n)) return NaN;
+      if (n === 0 || n === 1) return 1;
+      let res = 1;
+      for (let i = 2; i <= n; i++) res *= i;
+      return res;
+    }
+
+    // 카시오 수식을 자바스크립트용 수식으로 가공
+    function buildEvaluatableFormula(expression) {
+      let formula = expression;
+      formula = formula.replace(/π/g, "Math.PI");
+      formula = formula.replace(/e/g, "Math.E");
+      const angleUnit = isDegree ? "(Math.PI / 180)" : "1";
+      formula = formula.replace(/sin\(/g, `Math.sin(${angleUnit}*`);
+      formula = formula.replace(/cos\(/g, `Math.cos(${angleUnit}*`);
+      formula = formula.replace(/tan\(/g, `Math.tan(${angleUnit}*`);
+      formula = formula.replace(/log10\(/g, "Math.log10(");
+      formula = formula.replace(/ln\(/g, "Math.log(");
+      formula = formula.replace(/sqrt\(/g, "Math.sqrt(");
+      formula = formula.replace(/exp\(/g, "Math.exp(");
+      formula = formula.replace(/(\d+)!/g, "fact($1)");
+      return formula;
+    }
+
+    // 계산 (=)
+    function calculate() {
+      if (currentInput === "") return;
+      let formula = currentInput;
+      const openCount = (formula.match(/\(/g) || []).length;
+      const closeCount = (formula.match(/\)/g) || []).length;
+      if (openCount > closeCount) {
+        formula += ")".repeat(openCount - closeCount);
+      }
+      try {
+        const parsedFormula = buildEvaluatableFormula(formula);
+        const calcResult = new Function(`return (${parsedFormula})`)();
+        if (calcResult === undefined || isNaN(calcResult)) {
+          throw new Error();
+        }
+        resultValue = Number.isInteger(calcResult) 
+          ? calcResult.toString() 
+          : parseFloat(calcResult.toFixed(10)).toString();
+      } catch (e) {
+        resultValue = "Error";
+      }
+      shouldReset = true;
+      updateLCD();
+    }
+
+    // 키보드 입력 대응
+    document.addEventListener("keydown", function(event) {
+      const key = event.key;
+      if (key >= "0" && key <= "9") {
+        appendNumber(key);
+      } else if (key === ".") {
+        appendDecimal();
+      } else if (key === "+") {
+        appendOperator("+");
+      } else if (key === "-") {
+        appendOperator("-");
+      } else if (key === "*") {
+        appendOperator("*");
+      } else if (key === "/") {
+        event.preventDefault();
+        appendOperator("/");
+      } else if (key === "(") {
+        appendBracket("(");
+      } else if (key === ")") {
+        appendBracket(")");
+      } else if (key === "Enter" || key === "=") {
+        calculate();
+      } else if (key === "Backspace") {
+        backspace();
+      } else if (key === "Escape") {
+        clearAll();
+      }
+    });
+  </script>
+</body>
+</html>
+
+```
